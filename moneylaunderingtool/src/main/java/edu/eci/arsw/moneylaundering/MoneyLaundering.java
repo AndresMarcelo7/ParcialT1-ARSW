@@ -17,7 +17,8 @@ public class MoneyLaundering
     private TransactionAnalyzer transactionAnalyzer;
     private TransactionReader transactionReader;
     private int amountOfFilesTotal;
-    private AtomicInteger amountOfFilesProcessed;
+    private static AtomicInteger amountOfFilesProcessed;
+    private MoneyLaunderingThread[] listaHilos;
 
     public MoneyLaundering()
     {
@@ -25,20 +26,45 @@ public class MoneyLaundering
         transactionReader = new TransactionReader();
         amountOfFilesProcessed = new AtomicInteger();
     }
-
     public void processTransactionData()
     {
         amountOfFilesProcessed.set(0);
         List<File> transactionFiles = getTransactionFileList();
         amountOfFilesTotal = transactionFiles.size();
-        for(File transactionFile : transactionFiles)
-        {            
-            List<Transaction> transactions = transactionReader.readTransactionsFromFile(transactionFile);
-            for(Transaction transaction : transactions)
-            {
-                transactionAnalyzer.addTransaction(transaction);
+        int nHilos=5;
+        int nArchivos = Math.floorDiv(amountOfFilesTotal,nHilos);
+        int sobrante = amountOfFilesTotal%nHilos;
+        listaHilos = new MoneyLaunderingThread[nHilos];
+
+        int inicio=0;
+        int fin=nHilos;
+        for (int i=0;i<nHilos;i++){
+            //Repartir el documento para cada hilo
+            ArrayList<File> aux = new ArrayList<File>();
+            for(int j=inicio;j<fin;j++){
+                aux.add(transactionFiles.get(j));
             }
-            amountOfFilesProcessed.incrementAndGet();
+            //System.out.println(inicio + " " + fin);
+            if (i==nHilos-2){
+                inicio= amountOfFilesTotal-sobrante;
+                fin=amountOfFilesTotal;
+            }
+            else{
+                inicio=fin;
+                fin+=nHilos;
+            }
+            listaHilos[i] = new MoneyLaunderingThread(aux,this,transactionAnalyzer,transactionReader);
+            listaHilos[i].start();
+
+            //System.out.printf(" \n Imprimiento arreglo de tamaño " + aux.size());
+        }
+
+        for (MoneyLaunderingThread hilo: listaHilos){
+            try {
+                hilo.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -47,6 +73,11 @@ public class MoneyLaundering
         return transactionAnalyzer.listOffendingAccounts();
     }
 
+    public MoneyLaunderingThread[] getListaHilos() {
+        return listaHilos;
+    }
+
+    public void incrementFilesProcesed(){ amountOfFilesProcessed.incrementAndGet();}
     private List<File> getTransactionFileList()
     {
         List<File> csvFiles = new ArrayList<>();
@@ -72,6 +103,25 @@ public class MoneyLaundering
             if(line.contains("exit"))
             {
                 System.exit(0);
+            }
+
+            if (line.contains("")){
+                String estado="";
+                for (MoneyLaunderingThread hilo: moneyLaundering.getListaHilos()){
+                    if (hilo.isPaused()) {
+                        hilo.continuar();
+                        estado="Activo";
+                    }
+                    else {
+                        hilo.pausar();
+                        estado="Pausado";
+                    }
+
+                }
+
+                System.out.printf(estado + "!!!");
+
+
             }
 
             String message = "Processed %d out of %d files.\nFound %d suspect accounts:\n%s";
