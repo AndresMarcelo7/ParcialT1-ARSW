@@ -32,7 +32,7 @@ public class MoneyLaunderingController
     }
 
     @RequestMapping(value = "/{acId}", method = GET)
-    public ResponseEntity<?> offendingAccounts(@PathVariable("acId") String acId) {
+    public ResponseEntity<?> offendingAccountsById(@PathVariable("acId") String acId) {
         try {
             return new ResponseEntity<>(moneyLaunderingService.getAccountStatus(acId), HttpStatus.ACCEPTED);
         } catch (SuspectAccountException e) {
@@ -45,7 +45,7 @@ public class MoneyLaunderingController
     public ResponseEntity<?> registerAccount(@RequestBody SuspectAccount suspectAccount) {
         try {
             moneyLaunderingService.createAccount(suspectAccount);
-            return new ResponseEntity<>( HttpStatus.ACCEPTED);
+            return new ResponseEntity<>("Nueva cuenta Registrada exitosamente",HttpStatus.ACCEPTED);
         } catch (SuspectAccountException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.ALREADY_REPORTED);
         }
