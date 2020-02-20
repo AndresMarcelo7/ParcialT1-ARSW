@@ -11,7 +11,7 @@ public class MoneyLaunderingServiceStub implements MoneyLaunderingService {
     List<SuspectAccount> sospechosas;
     public MoneyLaunderingServiceStub(){
         //Load Stub Data
-        sospechosas=new CopyOnWriteArrayList<>();
+        sospechosas=new CopyOnWriteArrayList<>(); //Prevencion Condicion de carrera
         SuspectAccount cuenta1=new SuspectAccount("cuenta1",400);
         SuspectAccount cuenta2=new SuspectAccount("cuenta2",401);
         SuspectAccount cuenta3=new SuspectAccount("cuenta3",500);
