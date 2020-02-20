@@ -13,7 +13,7 @@ public class SuspectAccount {
         amountOfSmallTransactions+=amount;
     }
 
-    public String getId() {
+    public String getAccountId() {
         return accountId;
     }
 

@@ -23,10 +23,11 @@ public class MoneyLaunderingServiceStub implements MoneyLaunderingService {
         sospechosas.add(cuenta4);
         sospechosas.add(cuenta5);
     }
+
     @Override
     public SuspectAccount getAccountStatus(String accountId) throws SuspectAccountException {
         for (SuspectAccount cuenta:sospechosas) {
-            if (cuenta.getId().equals(accountId)) {
+            if (cuenta.getAccountId().equals(accountId)) {
                 return cuenta;
             }
         }
@@ -36,7 +37,7 @@ public class MoneyLaunderingServiceStub implements MoneyLaunderingService {
     @Override
     public void updateAccountStatus(SuspectAccount suspectAccount) throws SuspectAccountException {
         try{
-            SuspectAccount cuenta=getAccountStatus(suspectAccount.getId());
+            SuspectAccount cuenta=getAccountStatus(suspectAccount.getAccountId());
             cuenta.updateAmount(suspectAccount.getAmountOfSmallTransactions());
         } catch (SuspectAccountException e) {
             throw e;
@@ -46,7 +47,7 @@ public class MoneyLaunderingServiceStub implements MoneyLaunderingService {
     @Override
     public void createAccount(SuspectAccount suspectAccount)throws SuspectAccountException {
         for (SuspectAccount cuenta :sospechosas) {
-            if (cuenta.getId().equals(suspectAccount.getId())) {
+            if (cuenta.getAccountId().equals(suspectAccount.getAccountId())) {
                 throw new SuspectAccountException("La cuenta ya se encuentra  registrada en el sistema,  haga PUT para actualizar");
             }
         }
